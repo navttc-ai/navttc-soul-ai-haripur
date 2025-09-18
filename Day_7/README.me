@@ -1,1 +1,58 @@
 
+# Object-Oriented Programming in Python: A Comprehensive Tutorial
+
+**Date:** September 18, 2025
+
+This tutorial provides an in-depth guide to the fundamental and advanced concepts of Object-Oriented Programming (OOP) in Python. OOP is a programming paradigm that organizes software design around data, or "objects," rather than functions and logic. This guide covers everything from the basics of classes and objects to complex inheritance patterns and object relationships.
+
+## Table of Contents
+
+1.  [The Core Concepts](#1-the-core-concepts)
+    - [Classes and Objects](#classes-and-objects)
+    - [Instance Variables and Methods](#instance-variables-and-methods)
+    - [Class Variables and Methods](#class-variables-and-methods)
+    - [Constructors and Destructors](#constructors-and-destructors)
+2.  [The Four Pillars: Inheritance](#2-the-four-pillars-inheritance)
+    - [Single Inheritance](#single-inheritance)
+    - [Multilevel Inheritance](#multilevel-inheritance)
+    - [Hierarchical Inheritance](#hierarchical-inheritance)
+    - [Multiple Inheritance & MRO](#multiple-inheritance--method-resolution-order-mro)
+3.  [The Four Pillars: Encapsulation](#3-the-four-pillars-encapsulation)
+    - [Access Specifiers](#access-specifiers)
+    - [Name Mangling](#name-mangling)
+4.  [Advanced Structure and Relationships](#4-advanced-structure-and-relationships)
+    - [Inner/Nested Classes](#innernested-classes)
+    - [Association, Aggregation, and Composition](#association-aggregation-and-composition)
+5.  [Capstone Project](#5-capstone-project-university-management-system)
+6.  [Accompanying Presentation](#6-accompanying-presentation)
+
+---
+
+## 1. The Core Concepts
+
+These are the fundamental building blocks of OOP in Python.
+
+### Classes and Objects
+
+A **class** is a blueprint or template for creating objects. It defines a set of attributes (data) and methods (behaviors) that the created objects will have. An **object** is a specific instance of a class, with its own unique state.
+
+* **Analogy**: A `class` is like a cookie cutter. An `object` is the actual cookie. 🍪
+
+```python
+# The Class (Blueprint)
+class Dog:
+    # The constructor initializes the object's state
+    def __init__(self, name, breed):
+        self.name = name  # Attribute
+        self.breed = breed  # Attribute
+
+    # A method defines a behavior
+    def bark(self):
+        print(f"{self.name} says Woof!")
+
+# Creating Objects (Instances) from the class
+my_dog = Dog("Buddy", "Golden Retriever")
+your_dog = Dog("Lucy", "Poodle")
+
+print(my_dog.name) # Output: Buddy
+your_dog.bark()    # Output: Lucy says Woof!
