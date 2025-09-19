@@ -1,3 +1,5 @@
+#   https://teams.microsoft.com/meet/4306729599963?p=GLMjMIepLs3m1Yvnvl
+
 # NAVTTC AI Course - Daily Studies Repository
 
 ## Artificial Intelligence (Machine Learning & Deep Learning)
