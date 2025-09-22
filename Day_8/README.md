@@ -49,9 +49,6 @@ class Bird:
 def make_animal_speak(animal):
     return animal.speak()
 
-# Usage
-move_object(player, 5, 0, 0)
-render_object(player)
 ```
 
 ###  Example
