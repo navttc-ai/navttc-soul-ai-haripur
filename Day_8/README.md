@@ -312,7 +312,7 @@ send_alert(Email(), "Server is down!")
 send_alert(SMS(), "Server is down!")
 ```
 
-### Media Player Example
+### Employee Example
 
 ```python
 # Base class
