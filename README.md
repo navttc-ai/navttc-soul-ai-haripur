@@ -1,4 +1,4 @@
-#   https://teams.microsoft.com/l/meetup-join/19%3aBJwjv0nuNsQ0oFlTRdGF8k_RU3vAMX0-F427Ds1A4HU1%40thread.tacv2/1758621704141?context=%7b%22Tid%22%3a%2275df096c-8b72-48e4-9b91-cbf79d87ee3a%22%2c%22Oid%22%3a%22c9273aca-d67a-4f7b-b64b-7731cdb5ce17%22%7d
+#   https://teams.microsoft.com/l/meetup-join/19%3a6PaYoOVTLKMcZkxL1ngxvWx_huacxBIGpj6_jpIr6JY1%40thread.tacv2/1758708123230?context=%7b%22Tid%22%3a%2275df096c-8b72-48e4-9b91-cbf79d87ee3a%22%2c%22Oid%22%3a%22c9273aca-d67a-4f7b-b64b-7731cdb5ce17%22%7d
 
 # NAVTTC AI Course - Daily Studies Repository
 
