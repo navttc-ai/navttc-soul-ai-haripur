@@ -1,6 +1,11 @@
 # 📊 Beginner's Guide to Correlation, Probability, and Plots in Python
 
 *A comprehensive guide for new learners to master data visualization and statistical concepts*
+## Important links for documentation
+### For Matplotlib
+https://matplotlib.org/stable/plot_types/index.html
+### For Seaborn
+https://seaborn.pydata.org/tutorial.html
 
 ## 📋 Table of Contents
 - [Introduction](#introduction)
