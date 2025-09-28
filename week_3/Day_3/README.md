@@ -41,7 +41,8 @@ Let's get our hands dirty and create some arrays! First, you always need to impo
 
 ```python
 # We import numpy and give it a nickname 'np' to save time
-import numpy as np```
+import numpy as np
+```
 
 ### 1. From a Python List
 
