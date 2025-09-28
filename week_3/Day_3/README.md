@@ -4,7 +4,7 @@ Welcome to the world of NumPy! 📘 If you want to work with data, science, or A
 
 This guide will walk you through the most important basics, from creating your first array to combining and splitting them. Let's get started! 🎯
 
----
+
 
 ### 📋 Table of Contents
 
@@ -16,7 +16,7 @@ This guide will walk you through the most important basics, from creating your f
 6.  [Practice Your New Skills!](#-practice-your-new-skills)
 7.  [Where to Go Next](#-where-to-go-next)
 
----
+
 
 ## 🤔 What is NumPy & Why is it Awesome?
 
@@ -33,7 +33,7 @@ This guide will walk you through the most important basics, from creating your f
 
 Basically, if you're doing math with lists of numbers, you want to use NumPy!
 
----
+
 
 ## 📖 Part 1: Creating Your First NumPy Arrays
 
