@@ -128,7 +128,8 @@ features_train_flat = features_train.reshape(num_samples, -1)
 xgb_classifier = xgb.XGBClassifier(use_label_encoder=False, eval_metric='logloss')
 xgb_classifier.fit(features_train_flat, y_train)
 
-# Now xgb_classifier can be used for prediction on features extracted from new images```
+# Now xgb_classifier can be used for prediction on features extracted from new images
+```
 
 ### 🧩 Related Concepts
 
