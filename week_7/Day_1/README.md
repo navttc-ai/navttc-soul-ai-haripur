@@ -1,8 +1,10 @@
 For faster download of xgboost and tensorflow
-``` bash
 for xgboost
+``` bash
 pip install xgboost -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
 for tensorflow
+``` bash
 pip install tensorflow -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
