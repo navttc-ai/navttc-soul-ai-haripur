@@ -1,3 +1,11 @@
+For faster download of xgboost and tensorflow
+``` bash
+for xgboost
+pip install xgboost -i https://pypi.tuna.tsinghua.edu.cn/simple
+for tensorflow
+pip install tensorflow -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
 ### 📘 Introduction
 
 **Boosting** is a powerful ensemble learning technique in machine learning designed to improve the accuracy of predictive models. The core principle of boosting is to combine multiple simple models, often called "weak learners," into a single, highly accurate model, or "strong learner." Unlike other ensemble methods like bagging that build models in parallel, boosting is a **sequential process**. Each new model in the sequence is trained to correct the errors made by its predecessors, allowing the overall system to learn from its mistakes and progressively improve its performance.
