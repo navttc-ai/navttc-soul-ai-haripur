@@ -19,13 +19,9 @@ Here's the extracted and organized information on how to set up a Conda environm
     ```bash
     conda install pytorch torchvision torchaudio -c pytorch
     ```
-*   Install Hugging Face Transformers from the huggingface channel:
+*   Install tensorflow:
     ```bash
-    conda install -c huggingface transformers
-    ```
-*   Install scikit-learn and pandas from the conda-forge channel:
-    ```bash
-    conda install -c conda-forge scikit-learn pandas
+    pip install tensorflow -i https://pypi.tuna.tsinghua.edu.cn/simple
     ```
 
 ## Step 3: Install and activate ipykernel
