@@ -1,4 +1,4 @@
-<d'generate_content'>
+<'generate_content'>
 📘 **Introduction**
 
 A Recurrent Neural Network (RNN) is a class of artificial neural networks designed to recognize patterns in sequences of data, such as text, speech, and time-series data. Unlike traditional feedforward neural networks, which treat inputs as independent, RNNs have loops in them, allowing information to persist. This "memory" enables them to use information from prior inputs to influence the current input and output, making them ideal for tasks where context is crucial.
