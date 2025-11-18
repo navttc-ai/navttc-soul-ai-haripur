@@ -1,325 +1,580 @@
-- This is a comprehensive guide on integrating Large Language Models (LLMs) with custom Machine Learning (ML) models, using Streamlit to create an interactive chatbot front-end. This architecture empowers applications to combine the natural language prowess of LLMs with the specialized, predictive accuracy of custom ML models.
+## Integrating LLMs with Custom ML Models using Streamlit: A Step-by-Step Tutorial
 
 ### 📘 Introduction
 
-Integrating LLMs with custom ML models via a chatbot interface creates a powerful, interactive application. This hybrid system leverages the strengths of both technologies:
+In the age of artificial intelligence, conversational interfaces are becoming the new frontier for user interaction. Large Language Models (LLMs) like those accessible through APIs from Groq, OpenAI, or Hugging Face have made it incredibly easy to build chatbots that can understand and respond to human language. However, the true power of these models is unlocked when they are combined with specialized, custom-trained machine learning (ML) models.
 
-*   **Large Language Models (LLMs):** Excel at understanding and generating human-like text, making them perfect for conversational interfaces. They can interpret a user's intent from unstructured language.
-*   **Custom Machine Learning (ML) Models:** Provide specialized, high-accuracy predictions for specific tasks (e.g., classification, regression, forecasting) based on structured data.
-*   **Streamlit:** An open-source Python library that makes it easy to create and share beautiful, custom web apps for machine learning and data science projects with minimal code.
+This tutorial will guide you through the process of integrating a powerful LLM with a custom ML model to create an intelligent, interactive application using Streamlit. We will build a **Heart Disease Prediction chatbot**. A user will be able to describe their clinical parameters in natural language (e.g., "I am 55 years old with a cholesterol level of 220 mg/dL"). The LLM will parse this unstructured text into a structured format that our custom ML model can understand. The ML model will then predict the likelihood of heart disease, and the result will be presented back to the user in a friendly, conversational manner.
 
-**The Workflow:** The process is straightforward yet powerful:
-1.  A user interacts with a chatbot built with Streamlit.
-2.  The LLM interprets the user's text to understand their intent and extracts relevant information.
-3.  This extracted information is formatted into a structured input for a custom ML model.
-4.  An API call is made to the ML model, which performs a prediction.
-5.  The prediction is returned to the application.
-6.  The LLM then uses this prediction to formulate a helpful, natural language response, which is displayed to the user in the Streamlit chat interface.
+**Why does this matter?**
 
-**Why it Matters:** This integration bridges the gap between conversational AI and specialized predictive analytics. It allows non-technical users to access the power of complex ML models through simple conversation, unlocking new possibilities in customer support, data analysis, personal assistants, and more.
+*   **Enhanced User Experience:** Instead of filling out rigid forms, users can interact with your application naturally, as if they were talking to a human expert.
+*   **Increased Accessibility:** This approach makes complex ML models accessible to non-technical users who may not understand the specific input features required.
+*   **Dynamic and Smart Applications:** The LLM can not only parse data but also provide explanations, answer follow-up questions, and guide the user, creating a truly intelligent system.
 
-**Scope:** This guide covers the end-to-end process: training a simple ML model, deploying it as an API using FastAPI, building the LLM orchestrator, and creating a user-friendly chatbot interface with Streamlit.
+**Scope:** This tutorial will cover everything from loading a pre-trained Keras model to building the Streamlit interface, parsing user input with an LLM, making predictions, and presenting the results.
 
 ### 🔍 Deep Explanation
 
-This architecture consists of three main, decoupled components:
+The core logic of our application follows a clear, multi-step process. This architecture allows for a clean separation of concerns, where each component has a specific role.
 
-1.  **The Custom ML Model API:** Your trained ML model (e.g., a Scikit-learn classifier) is not run directly inside the Streamlit app. Instead, it's wrapped in a web server like **FastAPI** and exposed as a REST API endpoint. This is a crucial design principle for scalability, maintainability, and separation of concerns.
-    *   **Why FastAPI?** It's a modern, high-performance web framework for building APIs with Python. It's easy to learn, fast to code, and provides automatic data validation and API documentation.
+**The Architectural Flow:**
 
-2.  **The LLM Orchestrator:** This is the "brain" of the application. It's a Python script that manages the conversation flow. When it receives a user query, it uses an LLM (like one from OpenAI or Hugging Face) to perform "function calling" or "tool use." The LLM's job is to determine the user's intent and extract the necessary data to call the custom ML model's API. Frameworks like **LangChain** are excellent for managing this orchestration.
+1.  **User Input:** The user interacts with a chat interface built with Streamlit, entering their health data in plain English.
+2.  **LLM-Powered Parsing:** The unstructured text from the user is sent to an LLM via an API call. We will engineer a prompt that instructs the LLM to act as a data extractor, identifying key medical parameters and structuring them into a predefined JSON format.
+3.  **Structured Data Conversion:** The LLM returns a JSON object (which we will handle as a Python dictionary) containing the parsed data (e.g., `{'age': 55, 'chol': 220, ...}`).
+4.  **Data Preprocessing:** The structured data is then prepared for the ML model. This step often involves scaling numerical features to match the format used during the model's training phase.
+5.  **ML Model Prediction:** The preprocessed data is fed into our custom-trained Keras model, which outputs a prediction (e.g., a probability score for the presence of heart disease).
+6.  **LLM-Powered Explanation:** The raw prediction (e.g., `0.85`) is sent back to the LLM. We use another prompt to ask the LLM to translate this technical output into a user-friendly, empathetic explanation.
+7.  **Displaying the Result:** The final, human-readable response is displayed to the user in the Streamlit chat window.
 
-3.  **The Streamlit Chat Interface:** This is the front-end where the user interacts with the system. Streamlit's chat elements (`st.chat_message`, `st.chat_input`) make it incredibly simple to build a polished conversational UI. A key feature used here is **Session State** (`st.session_state`), which allows the application to remember the conversation history between user interactions.
+Here is a diagram illustrating this flow:
 
-#### **Step-by-Step Implementation Flow**
+```
+User Input (Natural Language)
+       |
+       v
+Streamlit Chat Interface
+       |
+       v
+LLM API (Data Parsing) --> Returns Structured JSON
+       |
+       v
+Python Backend (Preprocessing)
+       |
+       v
+Custom ML Model (.h5) --> Returns Prediction (e.g., 0 or 1)
+       |
+       v
+LLM API (Explanation Generation) --> Returns Friendly Text
+       |
+       v
+Streamlit Chat Interface
+       |
+       v
+User (Receives Explained Prediction)
+```
 
-1.  **Train and Save the ML Model:** Train a model for a specific task (e.g., sentiment analysis, price prediction). Save (serialize) the trained model to a file using a library like `joblib` or `pickle`.
+### 💡 Prerequisites
 
-2.  **Build the ML Model API (with FastAPI):**
-    *   Create a new Python script for your API.
-    *   Load the saved model.
-    *   Define an endpoint (e.g., `/predict`) that accepts a POST request.
-    *   Use Pydantic models to define the expected input data structure and ensure data validation.
-    *   The endpoint function will process the input data, call the model's `.predict()` method, and return the result as a JSON response.
+Before we begin, ensure you have the following:
 
-3.  **Build the Streamlit Chat Application:**
-    *   **UI Setup:** Use `st.title` and `st.chat_input` to create the basic interface.
-    *   **Session State Initialization:** On the first run, initialize a `messages` list in `st.session_state` to store the conversation history.
-    *   **Display History:** On every rerun, loop through the messages in `st.session_state.messages` and display them using `st.chat_message`.
-    *   **Handle User Input:** When a user enters a message in `st.chat_input`, append it to the session state and display it.
-    *   **Orchestration Logic:**
-        *   Send the user's prompt to the LLM. The LLM's prompt will instruct it to act as a helpful assistant that can use a specific "tool" (our custom ML model).
-        *   The LLM should respond with a structured output indicating that it needs to call the ML model and provide the extracted parameters.
-        *   Make an HTTP request (using a library like `requests`) to your FastAPI endpoint with the extracted parameters.
-        *   Receive the prediction from the API.
-        *   Send a final prompt to the LLM, giving it the model's prediction and asking it to formulate a user-friendly response.
-    *   **Display Assistant Response:** Append the final response to the session state and display it in the chat.
+*   **Python 3.8+** installed on your system.
+*   **Basic understanding of Python**, including dictionaries, lists, and functions.
+*   **An API key from an LLM provider.** For this tutorial, we will use the **Groq API**, which is known for its high speed and offers a generous free tier.
+    *   Go to [GroqCloud](https://console.groq.com/keys) to sign up and get your free API key.
+*   **Required Python libraries installed.** You can install them all with the following command:
+    ```bash
+    pip install streamlit tensorflow scikit-learn groq pandas numpy
+    ```
 
-### 💡 Examples
+### Step 1: Create and Load the Custom ML Model
 
-Let's build a complete example: a **Credit Score Classifier**. A user provides their annual income and age, and the chatbot, backed by a custom ML model, predicts whether their credit score is 'Good' or 'Poor'.
+For this tutorial, we'll use the well-known **UCI Heart Disease Dataset**. First, we need a trained ML model. Below is a Python script (`train_model.py`) that trains a simple neural network using Keras (TensorFlow) and saves it as `heart_disease_model.h5`. It also saves the scaler used for preprocessing, which is crucial for making accurate predictions on new data.
 
-#### **Part 1: Train and Save the Custom ML Model**
+**Dataset:** You can download the dataset from Kaggle: [Heart Disease UCI](https://www.kaggle.com/datasets/redwankarimsony/heart-disease-data). Save it as `heart_disease.csv` in your project directory.
 
-First, create and save a simple classification model.
-
+**`train_model.py`**
 ```python
-# 1_create_model.py
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
 import joblib
 
-# Sample Data
-data = {
-    'age': [25, 30, 35, 40, 45, 22, 50, 60, 28, 33],
-    'annual_income': [50000, 80000, 60000, 120000, 90000, 40000, 150000, 75000, 55000, 85000],
-    'credit_score': ['Good', 'Good', 'Good', 'Good', 'Good', 'Poor', 'Good', 'Poor', 'Poor', 'Good']
-}
-df = pd.DataFrame(data)
+# 1. Load the dataset
+data = pd.read_csv('heart_disease.csv')
 
-# Features and target
-X = df[['age', 'annual_income']]
-y = df['credit_score']
+# 2. Define features (X) and target (y)
+X = data.drop('target', axis=1)
+y = data['target']
 
-# Train-test split
+# 3. Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Train a simple model
-model = RandomForestClassifier(n_estimators=10, random_state=42)
-model.fit(X_train, y_train)
+# 4. Scale the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-# Evaluate
-y_pred = model.predict(X_test)
-print(f"Model Accuracy: {accuracy_score(y_test, y_pred):.2f}")
+# 5. Build the Keras model
+model = Sequential([
+    Dense(32, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+    Dense(16, activation='relu'),
+    Dense(1, activation='sigmoid')
+])
 
-# Save the model
-joblib.dump(model, 'credit_classifier_model.pkl')
-print("Model saved to credit_classifier_model.pkl")
+# 6. Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# 7. Train the model
+model.fit(X_train_scaled, y_train, epochs=100, batch_size=10, verbose=0)
+
+# 8. Save the model and the scaler
+model.save('heart_disease_model.h5')
+joblib.dump(scaler, 'scaler.joblib')
+
+print("Model and scaler have been saved successfully!")
+
+# Evaluate the model (optional)
+loss, accuracy = model.evaluate(X_test_scaled, y_test)
+print(f"Test Accuracy: {accuracy*100:.2f}%")
 ```
 
-#### **Part 2: Deploy the Model with a FastAPI API**
+Run this script once to generate `heart_disease_model.h5` and `scaler.joblib`. Now, our Streamlit app can load these files to make predictions.
 
-Now, wrap the model in a FastAPI service.
+### Step 2: Set Up the Streamlit Application
 
+Create a new file named `streamlit_app.py`. This will be the main file for our application. We'll start by setting up the basic Streamlit interface, including the title and the chat history.
+
+**`streamlit_app.py` (Initial Setup)**
 ```python
-# 2_model_api.py
-from fastapi import FastAPI
-from pydantic import BaseModel
-import joblib
-import numpy as np
-
-# Initialize FastAPI app
-app = FastAPI(title="Credit Score Prediction API")
-
-# Load the trained model
-model = joblib.load('credit_classifier_model.pkl')
-
-# Define the input data model using Pydantic
-class InputData(BaseModel):
-    age: int
-    annual_income: int
-
-# Define the prediction endpoint
-@app.post('/predict')
-def predict_credit_score(data: InputData):
-    """Takes user age and income and predicts credit score."""
-    # Convert input data to a numpy array for the model
-    features = np.array([[data.age, data.annual_income]])
-    
-    # Make a prediction
-    prediction = model.predict(features)[0]
-    
-    return {"predicted_credit_score": prediction}
-
-# To run this API:
-# 1. Install fastapi and uvicorn: pip install fastapi "uvicorn[standard]"
-# 2. Run in your terminal: uvicorn 2_model_api:app --reload
-```
-You can now access the interactive API docs at `http://127.0.0.1:8000/docs`.
-
-#### **Part 3: Build the Streamlit Chatbot**
-
-This is the main application that integrates everything.
-
-```python
-# 3_chatbot_app.py
 import streamlit as st
-import openai
-import requests
+from tensorflow.keras.models import load_model
+import numpy as np
+import joblib
+from groq import Groq
 import json
 
-# --- Configuration ---
-# It's recommended to use st.secrets for API keys
-# For this example, we'll set it directly.
-# Make sure to replace "YOUR_API_KEY" with your actual OpenAI API key.
-openai.api_key = "YOUR_API_KEY" 
-ML_API_URL = "http://127.0.0.1:8000/predict"
+# --- Page Configuration ---
+st.set_page_config(
+    page_title="Heart Disease Prediction Chatbot",
+    page_icon="❤️",
+    layout="centered"
+)
 
-# --- LLM and API Functions ---
+# --- Title and Description ---
+st.title("❤️ Heart Disease Prediction Chatbot")
+st.markdown("""
+Welcome! I'm a chatbot powered by an AI model that can help you understand your risk of heart disease.
+Please describe your medical parameters in the chat below. For example:
+*_"I am a 52 year old male with a resting blood pressure of 130, cholesterol of 240, and a max heart rate of 150."_*
+""")
 
-def call_custom_ml_model(age: int, income: int):
-    """Function to call the FastAPI endpoint."""
-    payload = {"age": age, "annual_income": income}
-    try:
-        response = requests.post(ML_API_URL, json=payload)
-        response.raise_for_status()  # Raise an exception for bad status codes
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        return {"error": f"Could not get prediction: {e}"}
+# --- Load ML Model and Scaler ---
+@st.cache_resource
+def load_prediction_model():
+    model = load_model('heart_disease_model.h5')
+    scaler = joblib.load('scaler.joblib')
+    # Feature names based on the training data columns
+    feature_names = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+    return model, scaler, feature_names
 
-def get_llm_decision(user_prompt):
-    """
-    Use an LLM with function calling to decide whether to call the custom ML model.
-    """
-    response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": user_prompt}],
-        functions=[
-            {
-                "name": "predict_credit_score",
-                "description": "Get the predicted credit score for a user based on their age and annual income.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "age": {"type": "integer", "description": "The age of the user."},
-                        "income": {"type": "integer", "description": "The annual income of the user."},
-                    },
-                    "required": ["age", "income"],
-                },
-            }
-        ],
-        function_call="auto",
-    )
-    return response.choices[0].message
+model, scaler, feature_names = load_prediction_model()
 
-# --- Streamlit App UI ---
-
-st.title("🤖 Credit Score Assistant")
-st.caption("I can help predict your credit score category based on your age and income.")
-
-# Initialize chat history in session state
+# --- Initialize Session State ---
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello! How can I assist you today?"}]
+    st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
 
-# Display chat messages from history
+# --- Display Chat History ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Accept user input
-if prompt := st.chat_input("e.g., I'm 35 years old and make $90,000 a year."):
+# --- Main App Logic (to be continued) ---
+
+```
+
+### Step 3: Collect and Parse User Input with an LLM
+
+This is the most critical step. We need to take the user's free-text input and convert it into a structured dictionary. We will use the Groq API for this. We will craft a system prompt that tells the LLM exactly what to do: extract specific medical features and return them as a JSON object.
+
+First, add a section in your `streamlit_app.py` to get the Groq API key from the user (using `st.sidebar` and `st.text_input` for security).
+
+**`streamlit_app.py` (Adding API Key Input)**
+```python
+# ... (previous code)
+
+# --- Groq API Key ---
+try:
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+except:
+    groq_api_key = st.sidebar.text_input("Enter your Groq API Key:", type="password")
+
+if not groq_api_key:
+    st.info("Please add your Groq API key to continue.")
+    st.stop()
+
+client = Groq(api_key=groq_api_key)
+
+# ... (rest of the code)
+```
+*Note: For deployment, it's best practice to use Streamlit's secrets management (`st.secrets`). For local development, the sidebar input is fine.*
+
+Now, let's create the function that calls the Groq API to parse the input.
+
+**`streamlit_app.py` (Adding the LLM Parser Function)**
+```python
+# ... (previous code)
+
+def get_structured_data(user_input):
+    """
+    Uses Groq LLM to parse user input into a structured dictionary.
+    """
+    system_prompt = f"""
+    You are an expert data extraction assistant. Your task is to extract medical parameters
+    from the user's text and return them as a JSON object. The required features are:
+    {', '.join(feature_names)}.
+
+    - The user will provide their data in natural language.
+    - You must map their input to the correct feature names.
+    - For binary features ('sex', 'fbs', 'exang'), use 1 for male/true/yes and 0 for female/false/no.
+    - If a feature is not mentioned, set its value to 0.
+    - Return ONLY the JSON object, with no other text or explanations.
+
+    Example:
+    User input: "I am a 55 year old man, BP 140/90, cholesterol 250, my fasting blood sugar is fine, and I don't get angina on exercise. Max heart rate 160."
+    Your output:
+    {{
+      "age": 55, "sex": 1, "cp": 0, "trestbps": 140, "chol": 250,
+      "fbs": 0, "restecg": 0, "thalach": 160, "exang": 0, "oldpeak": 0.0,
+      "slope": 0, "ca": 0, "thal": 0
+    }}
+    """
+    
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_input},
+        ],
+        model="llama3-8b-8192",
+        temperature=0.0,
+        response_format={"type": "json_object"},
+    )
+    
+    response_content = chat_completion.choices[0].message.content
+    try:
+        return json.loads(response_content)
+    except json.JSONDecodeError:
+        st.error("Error: The LLM returned an invalid format. Please try rephrasing your input.")
+        return None
+
+# ... (rest of the code)
+```
+
+### Step 4 & 5: Preprocess, Predict, and Explain
+
+With the structured data in hand, we can now preprocess it, feed it to our Keras model, and get a prediction. We will then send this prediction *back* to the LLM to generate a human-friendly explanation.
+
+**`streamlit_app.py` (Adding Prediction and Explanation Logic)**
+```python
+# ... (previous code)
+
+def get_prediction_explanation(prediction_result):
+    """
+    Uses Groq LLM to generate a user-friendly explanation of the prediction.
+    """
+    if prediction_result == 1:
+        prompt_text = "The model predicts a HIGH risk of heart disease. Please provide a brief, empathetic explanation for a non-technical user. Advise them to consult a doctor for a proper diagnosis. Do not give medical advice."
+    else:
+        prompt_text = "The model predicts a LOW risk of heart disease. Please provide a brief, reassuring explanation for a non-technical user. Encourage them to maintain a healthy lifestyle."
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a helpful medical assistant AI. Your role is to explain prediction results clearly and kindly."},
+            {"role": "user", "content": prompt_text},
+        ],
+        model="llama3-8b-8192",
+        temperature=0.5,
+    )
+    return chat_completion.choices[0].message.content
+
+# --- Main App Logic ---
+if prompt := st.chat_input("Describe your health parameters..."):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Get assistant response
+    # Display assistant response in a stream-like fashion
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         full_response = ""
 
-        # Step 1: Get LLM's decision on whether to call the function
-        llm_response = get_llm_decision(prompt)
-
-        if llm_response.function_call:
-            # Step 2: Call the custom ML model API
-            function_name = llm_response.function_call.name
-            function_args = json.loads(llm_response.function_call.arguments)
+        # Step 1: Parse user input
+        message_placeholder.markdown("Parsing your input... ⚙️")
+        structured_data = get_structured_data(prompt)
+        
+        if structured_data:
+            message_placeholder.markdown("Analyzing your data with the ML model... 🧠")
             
-            message_placeholder.markdown("🔍 *Calling our prediction model...*")
-            
-            api_result = call_custom_ml_model(
-                age=function_args.get("age"),
-                income=function_args.get("income")
-            )
+            # Step 2: Prepare data for the model
+            try:
+                # Create a DataFrame to ensure feature order
+                input_df = pd.DataFrame([structured_data])
+                input_df = input_df[feature_names] # Ensure correct column order
 
-            # Step 3: Send the result back to the LLM to generate a final response
-            if "error" in api_result:
-                final_content = f"Sorry, I encountered an error: {api_result['error']}"
-            else:
-                second_response = openai.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "user", "content": prompt},
-                        {"role": "function", "name": function_name, "content": json.dumps(api_result)},
-                    ],
-                )
-                final_content = second_response.choices[0].message.content
+                # Step 3: Scale the features
+                input_scaled = scaler.transform(input_df)
+
+                # Step 4: Make a prediction
+                prediction_prob = model.predict(input_scaled)[0][0]
+                prediction = 1 if prediction_prob > 0.5 else 0
+
+                # Step 5: Get a friendly explanation
+                message_placeholder.markdown("Generating an explanation... ✍️")
+                explanation = get_prediction_explanation(prediction)
+                
+                # Display the final result
+                result_md = f"""
+                ### Prediction Result:
+                - **Risk Level:** {'High Risk' if prediction == 1 else 'Low Risk'}
+                - **Probability Score:** {prediction_prob:.2f}
+
+                ---
+                **Explanation:**
+                {explanation}
+                """
+                message_placeholder.markdown(result_md)
+                st.session_state.messages.append({"role": "assistant", "content": result_md})
+
+            except Exception as e:
+                error_message = f"An error occurred during prediction: {e}. Please ensure your input is clear and contains relevant medical terms."
+                st.error(error_message)
+                st.session_state.messages.append({"role": "assistant", "content": error_message})
         else:
-            # If no function call, just get a regular chat response
-            final_content = llm_response.content
+            error_msg = "I couldn't understand the medical data in your message. Could you please try rephrasing it?"
+            message_placeholder.markdown(error_msg)
+            st.session_state.messages.append({"role": "assistant", "content": error_msg})
+```
 
-        full_response = final_content
-        message_placeholder.markdown(full_response)
+### Step 6: Full Example and Running the App
+
+Here is the complete `streamlit_app.py` file. Save it in the same directory as `heart_disease_model.h5`, `scaler.joblib`, and `heart_disease.csv`.
+
+**`streamlit_app.py`**
+```python
+import streamlit as st
+from tensorflow.keras.models import load_model
+import numpy as np
+import joblib
+from groq import Groq
+import json
+import pandas as pd
+
+# --- Page Configuration ---
+st.set_page_config(
+    page_title="Heart Disease Prediction Chatbot",
+    page_icon="❤️",
+    layout="centered"
+)
+
+# --- Title and Description ---
+st.title("❤️ Heart Disease Prediction Chatbot")
+st.markdown("""
+Welcome! I'm a chatbot powered by an AI model that can help you understand your risk of heart disease.
+Please describe your medical parameters in the chat below. For example:
+*_"I am a 52 year old male with a resting blood pressure of 130, cholesterol of 240, and a max heart rate of 150."_*
+""")
+
+# --- Groq API Key Handling ---
+try:
+    # For Streamlit Community Cloud
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+except (KeyError, FileNotFoundError):
+    # For local development
+    groq_api_key = st.sidebar.text_input("Enter your Groq API Key:", type="password")
+
+if not groq_api_key:
+    st.info("Please add your Groq API key to continue.")
+    st.stop()
+
+client = Groq(api_key=groq_api_key)
+
+# --- Load ML Model and Scaler ---
+@st.cache_resource
+def load_prediction_model():
+    """Loads the pre-trained Keras model and the scaler."""
+    try:
+        model = load_model('heart_disease_model.h5')
+        scaler = joblib.load('scaler.joblib')
+        # These are the feature names the model was trained on, in order.
+        feature_names = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+        return model, scaler, feature_names
+    except Exception as e:
+        st.error(f"Error loading model or scaler: {e}")
+        st.stop()
+
+model, scaler, feature_names = load_prediction_model()
+
+# --- Initialize Session State for Chat History ---
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
+
+# --- Display Chat History ---
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# --- LLM and Prediction Functions ---
+def get_structured_data(user_input):
+    """Uses Groq LLM to parse user input into a structured dictionary."""
+    system_prompt = f"""
+    You are an expert data extraction assistant. Your task is to extract medical parameters
+    from the user's text and return them as a JSON object. The required features are:
+    {', '.join(feature_names)}.
+
+    - The user will provide their data in natural language.
+    - You must map their input to the correct feature names.
+    - For binary features ('sex', 'fbs', 'exang'), use 1 for male/true/yes and 0 for female/false/no.
+    - If a value for a feature is not mentioned, you MUST set its value to a reasonable default, typically 0.
+    - Your output MUST be only the JSON object, with no other text, explanations, or markdown formatting.
+    """
     
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_input},
+            ],
+            model="llama3-8b-8192",
+            temperature=0.0,
+            response_format={"type": "json_object"},
+        )
+        response_content = chat_completion.choices[0].message.content
+        return json.loads(response_content)
+    except Exception as e:
+        st.error(f"An error occurred with the LLM API: {e}")
+        return None
+
+def get_prediction_explanation(prediction_result):
+    """Uses Groq LLM to generate a user-friendly explanation of the prediction."""
+    if prediction_result == 1:
+        prompt_text = "The model predicts a HIGH risk of heart disease. Please provide a brief, empathetic explanation for a non-technical user. IMPORTANT: Advise them to consult a doctor for a proper diagnosis and that this is not a medical opinion."
+    else:
+        prompt_text = "The model predicts a LOW risk of heart disease. Please provide a brief, reassuring explanation for a non-technical user and encourage them to maintain a healthy lifestyle."
+
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are a helpful medical assistant AI. Your role is to explain prediction results clearly and kindly."},
+                {"role": "user", "content": prompt_text},
+            ],
+            model="llama3-8b-8192",
+            temperature=0.5,
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        return f"Could not generate explanation due to an API error: {e}"
+
+
+# --- Main Application Logic ---
+if prompt := st.chat_input("Describe your health parameters..."):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # Display assistant response
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        
+        # Step 1: Parse user input
+        message_placeholder.markdown("Parsing your input... ⚙️")
+        structured_data = get_structured_data(prompt)
+        
+        if structured_data:
+            message_placeholder.markdown("Analyzing your data with the ML model... 🧠")
+            
+            try:
+                # Step 2: Prepare data for the model
+                input_df = pd.DataFrame([structured_data])
+                input_df = input_df[feature_names] # Ensure correct feature order
+
+                # Step 3: Scale the features
+                input_scaled = scaler.transform(input_df)
+
+                # Step 4: Make a prediction
+                prediction_prob = model.predict(input_scaled)[0][0]
+                prediction = 1 if prediction_prob > 0.5 else 0
+
+                # Step 5: Get a friendly explanation
+                message_placeholder.markdown("Generating an explanation... ✍️")
+                explanation = get_prediction_explanation(prediction)
+                
+                result_md = f"""
+                ### Prediction Result:
+                - **Risk Level:** {'**High Risk**' if prediction == 1 else '**Low Risk**'}
+                - **Confidence Score:** {prediction_prob:.2f}
+
+                ---
+                #### Explanation:
+                {explanation}
+                
+                **Disclaimer:** This is an AI-generated prediction and not a substitute for professional medical advice.
+                """
+                message_placeholder.markdown(result_md)
+                st.session_state.messages.append({"role": "assistant", "content": result_md})
+
+            except Exception as e:
+                error_message = f"An error occurred during prediction: {e}. Please ensure your input is clear."
+                st.error(error_message)
+                st.session_state.messages.append({"role": "assistant", "content": error_message})
+        else:
+            error_msg = "I couldn't understand the medical data in your message. Could you please try rephrasing it?"
+            message_placeholder.markdown(error_msg)
+            st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
 ```
-**To run the full application:**
-1.  Run the model creation script: `python 1_create_model.py`
-2.  Run the FastAPI server: `uvicorn 2_model_api:app --reload`
-3.  In a **new terminal**, run the Streamlit app: `streamlit run 3_chatbot_app.py`
+
+**To run the application:**
+
+1.  Open your terminal.
+2.  Navigate to the directory where you saved the files.
+3.  Run the command: `streamlit run streamlit_app.py`
+4.  Your browser will open with the chatbot interface.
 
 ### 🧩 Related Concepts
 
-*   **Function Calling / Tool Use:** A capability of modern LLMs where they can be given a set of "tools" (functions described in code) and can decide when to use them based on the conversation. This is the core mechanism enabling this integration.
-*   **Agents:** A design pattern where an LLM acts as a reasoning engine to decide a sequence of actions. The LLM can use various tools (like our custom ML API, a web search, or a calculator) to accomplish a complex task. Frameworks like LangChain provide powerful abstractions for building agents.
-*   **Microservices Architecture:** The practice of structuring an application as a collection of loosely coupled services. Deploying the ML model as its own microservice (the FastAPI app) is a prime example and a software engineering best practice.
-*   **MLOps (Machine Learning Operations):** The discipline of deploying and maintaining ML models in production reliably and efficiently. Having a separate API for the model is the first step in a good MLOps workflow.
-*   **Retrieval-Augmented Generation (RAG):** A technique where an LLM's response is grounded in information retrieved from an external knowledge base. In our case, the "knowledge base" is dynamic—it's the output of our custom predictive model.
+*   **Prompt Engineering:** The art of designing effective prompts for LLMs is crucial. In our app, we used two distinct prompts: one for structured data extraction and another for natural language explanation.
+*   **Function Calling / Tool Use:** More advanced LLMs offer "function calling" or "tool use" capabilities, which provide a more robust way to get structured JSON output compared to prompt formatting alone.
+*   **Model Fine-Tuning:** For highly specialized domains, you might fine-tune a smaller LLM on examples of text-to-JSON conversion to improve accuracy and reduce reliance on complex prompts.
+*   **Vector Databases & RAG:** For applications that need to answer questions based on large documents (like medical journals), you would combine this pattern with Retrieval-Augmented Generation (RAG) and a vector database.
+*   **MLOps (Machine Learning Operations):** In a production environment, you would need a robust system for versioning your ML models, monitoring their performance, and retraining them as new data becomes available.
 
 ### 📝 Assignments / Practice Questions
 
-1.  **Multiple Choice Question:**
-    In the described architecture, what is the primary role of `st.session_state`?
-    A) To store the trained Machine Learning model.
-    B) To manage the user's API keys securely.
-    C) To persist the conversation history across user interactions and app reruns.
-    D) To define the API endpoints for the ML model.
+1.  **Multiple Choice Question:** What is the primary role of the LLM in the initial step of the application's workflow?
+    a) To train the machine learning model.
+    b) To convert unstructured user text into a structured JSON format.
+    c) To create the Streamlit user interface.
+    d) To directly predict the user's health risk.
 
-2.  **Short Question:**
-    Why is it generally a bad idea to load and run the `model.predict()` function directly inside the Streamlit script instead of calling it via a separate API? Name at least two reasons.
+2.  **Short Answer:** Why is it necessary to save and reuse the `StandardScaler` object (`scaler.joblib`) from the training script?
 
-3.  **System Design Problem:**
-    You are tasked with building a "Plant Disease Detector" chatbot. A user will describe the symptoms of their plant (e.g., "the leaves have yellow spots and are wilting").
-    *   You have a custom image classification model that can identify diseases from a plant photo.
-    *   You also have a custom text classification model that can predict diseases from a textual description.
-    Design the workflow for a Streamlit app where the LLM can decide which of the two custom models to use based on the user's input (i.e., whether they provide text or upload an image).
+3.  **Problem-Solving Task:** Modify the `get_structured_data` function to handle a new feature, `height` (in cm). You will need to update the `system_prompt` to include this new feature. How would you ensure the Keras model could use this feature?
 
-4.  **Coding Task:**
-    Modify the `2_model_api.py` (FastAPI) script to handle batch predictions. The `/predict` endpoint should be able to accept a list of `InputData` objects and return a list of corresponding predictions.
+4.  **Case Study:** Imagine you want to adapt this application for a "Loan Approval Predictor." Your custom ML model requires features like `income`, `credit_score`, `loan_amount`, and `employment_duration`.
+    *   What would your new `system_prompt` for the LLM look like?
+    *   What kind of user input would you expect?
+    *   What challenges might you face in parsing financial data compared to medical data?
 
-5.  **Case Study Analysis:**
-    A company's Streamlit chatbot for predicting house prices is slow. Users report that the app freezes for several seconds after they submit their query. Upon investigation, you find that the custom house price prediction model (a large deep learning model) is being loaded from disk every time a user sends a message. How would you refactor the architecture using FastAPI and Streamlit to solve this performance issue?
+5.  **Coding Challenge:** Add error handling to the `get_structured_data` function. If the LLM fails to return a valid JSON object or misses key features, the app should gracefully inform the user and ask them to rephrase their input, rather than crashing.
 
 ### 📈 Applications
 
-*   **Interactive Data Analysis:** A business analyst can have a conversation with a chatbot to get sales forecasts. The LLM translates "What are the projected sales for next quarter in Germany?" into an API call to a custom forecasting model.
-*   **Healthcare Triage:** A patient can describe their symptoms to a chatbot. The LLM can extract key information and query a custom ML model to suggest whether the situation is 'non-urgent', 'requires a doctor's visit', or is an 'emergency'.
-*   **Personalized E-commerce:** A user tells a chatbot, "I'm looking for running shoes for a marathon." The LLM uses this context to call a custom recommendation engine that predicts the best shoes based on the user's purchase history and the specific request.
-*   **Automated Customer Support:** A customer complains, "My internet is down again!" The LLM extracts the customer ID and calls a custom ML model that predicts the probability of a network outage in their specific area, allowing the bot to give an informed, immediate response.
+This powerful pattern of combining conversational AI with specialized predictive models can be applied across numerous industries:
+
+*   **Healthcare:** As demonstrated, for preliminary risk assessment of diseases like diabetes, cancer, or stroke.
+*   **Finance:** For loan approval chatbots, fraud detection systems, and personalized investment advice tools.
+*   **Customer Support:** Automating complex troubleshooting by having an LLM understand the user's problem and feed structured data into a diagnostic model.
+*   **E-commerce:** Creating personal shopper bots that understand user preferences (e.g., "I'm looking for a blue cotton shirt for summer") and use a recommendation model to find the perfect product.
+*   **Real Estate:** Building a chatbot that helps users find a house by understanding their needs ("I want a 3-bedroom house near a good school") and feeding those parameters into a price prediction or matching model.
 
 ### 🔗 Related Study Resources
 
-*   **Streamlit Documentation:** Official guides on creating chat elements and using session state.
-    *   **Link:** [https://docs.streamlit.io/knowledge-base/tutorials/build-conversational-apps](https://docs.streamlit.io/knowledge-base/tutorials/build-conversational-apps)
-*   **FastAPI Documentation:** The best place to learn how to build high-performance APIs for your models.
-    *   **Link:** [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/)
-*   **LangChain Documentation:** For advanced use cases involving agents and chains of LLM calls.
-    *   **Link:** [https://python.langchain.com/docs/get_started/introduction](https://python.langchain.com/docs/get_started/introduction)
-*   **OpenAI Function Calling:** The official documentation on how to use the function calling feature.
-    *   **Link:** [https://platform.openai.com/docs/guides/function-calling](https://platform.openai.com/docs/guides/function-calling)
-*   **Deploying ML Models with Docker:** A great next step is to containerize your FastAPI app for robust deployment.
-    *   **Link:** [https://testdriven.io/blog/dockerizing-fastapi-and-react/](https://testdriven.io/blog/dockerizing-fastapi-and-react/) (While it mentions React, the FastAPI/Docker part is universal).
+*   **Streamlit Documentation:** For building chat applications.
+*   **Groq API Documentation:** To understand the API parameters and models available.
+*   **TensorFlow/Keras Documentation:** For saving and loading models.
+*   **Scikit-learn Documentation:** For data preprocessing tools like `StandardScaler`.
+*   **GitHub Repository with Code for a similar project:** [Heart Disease Prediction using Machine Learning](https://github.com/g-shreekant/Heart-Disease-Prediction-using-Machine-Learning).
 
 ### 🎯 Summary / Key Takeaways
 
-*   **Decoupled Architecture is Key:** Separate your ML model (API), orchestration logic (LLM), and front-end (Streamlit) for a scalable, maintainable, and efficient application.
-*   **LLM as the "Natural Language" Bridge:** The LLM's primary role is to act as an intelligent orchestrator, translating unstructured user language into structured API calls for your specialized model.
-*   **Custom Models Provide Precision:** Ground your chatbot's responses in the accurate, data-driven predictions of your custom ML model to avoid hallucinations and provide real value.
-*   **Streamlit for Rapid UI Development:** Use Streamlit's chat elements and session state to quickly build a professional-looking and functional user interface without needing front-end development experience.
-*   **FastAPI for Robust Model Serving:** Expose your ML model via a FastAPI endpoint to ensure high performance, automatic data validation, and clear documentation.
-*   **Start Simple:** The "Chatbot → LLM → API → Model" pattern is a powerful starting point for creating sophisticated AI-powered applications.
+*   **Hybrid AI is Powerful:** Combining the natural language understanding of LLMs with the predictive accuracy of specialized ML models creates highly effective and user-friendly applications.
+*   **The Core Pattern:** The fundamental workflow is **User Input -> LLM Parsing -> Structured Data -> ML Prediction -> LLM Explanation -> User Output**. This pattern is generalizable to almost any domain.
+*   **Prompt Engineering is Key:** The success of the data parsing and explanation steps depends heavily on well-crafted prompts that clearly define the LLM's task and expected output format.
+*   **Streamlit Simplifies UI:** Streamlit is an excellent tool for rapidly prototyping and deploying interactive AI and data science applications with minimal boilerplate code.
+*   **Always Preprocess:** Never forget to apply the *exact same* preprocessing (e.g., scaling) to new data as was used to train the model. Failure to do so will result in incorrect predictions.
+*   **Safety and Ethics:** When dealing with sensitive data like medical or financial information, always include disclaimers and prioritize user privacy. Never present AI predictions as infallible facts.
