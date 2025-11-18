@@ -84,7 +84,7 @@ from tensorflow.keras.layers import Dense
 import joblib
 
 # 1. Load the dataset
-data = pd.read_csv('heart_disease.csv')
+data = pd.read_csv('heart.csv')
 
 # 2. Define features (X) and target (y)
 X = data.drop('target', axis=1)
@@ -107,7 +107,7 @@ model = Sequential([
 
 # 6. Compile the model
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
+model.summary()
 # 7. Train the model
 model.fit(X_train_scaled, y_train, epochs=100, batch_size=10, verbose=0)
 
@@ -136,6 +136,7 @@ import numpy as np
 import joblib
 from groq import Groq
 import json
+import pandas as pd
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -238,7 +239,7 @@ def get_structured_data(user_input):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_input},
         ],
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         temperature=0.0,
         response_format={"type": "json_object"},
     )
@@ -275,7 +276,7 @@ def get_prediction_explanation(prediction_result):
             {"role": "system", "content": "You are a helpful medical assistant AI. Your role is to explain prediction results clearly and kindly."},
             {"role": "user", "content": prompt_text},
         ],
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         temperature=0.5,
     )
     return chat_completion.choices[0].message.content
