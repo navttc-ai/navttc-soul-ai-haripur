@@ -109,7 +109,7 @@ model = Sequential([
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 # 7. Train the model
-model.fit(X_train_scaled, y_train, epochs=100, batch_size=10, verbose=0)
+model.fit(X_train_scaled, y_train, epochs=100, batch_size=10, verbose=1)
 
 # 8. Save the model and the scaler
 model.save('heart_disease_model.h5')
