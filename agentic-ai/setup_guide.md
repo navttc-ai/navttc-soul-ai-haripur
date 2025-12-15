@@ -1,3 +1,6 @@
+set NODE_OPTIONS=--no-deprecation
+ccr code
+
 Here is a rewritten, streamlined, and polished version of the tutorial. I have organized it for better readability, clearer OS-specific instructions, and ease of copy-pasting.
 
 ***
