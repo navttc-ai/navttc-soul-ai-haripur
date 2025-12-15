@@ -1,7 +1,7 @@
 
-
+```bash
 npm install -g @anthropic-ai/claude-code @musistudio/claude-code-router
-
+```
 
 mkdir "%USERPROFILE%\.claude-code-router"
 
