@@ -2,17 +2,18 @@
 ```bash
 npm install -g @anthropic-ai/claude-code @musistudio/claude-code-router
 ```
-
+```bash
 mkdir "%USERPROFILE%\.claude-code-router"
+```
 
-
+```bash
 mkdir "%USERPROFILE%\.claude"
-
-
+```
+```bash
 notepad "%USERPROFILE%\.claude-code-router\config.json"
+```
 
-
-
+```bash
 {
   "LOG": true,
   "LOG_LEVEL": "info",
@@ -41,4 +42,4 @@ notepad "%USERPROFILE%\.claude-code-router\config.json"
     "longContextThreshold": 60000
   }
 }
-
+```
